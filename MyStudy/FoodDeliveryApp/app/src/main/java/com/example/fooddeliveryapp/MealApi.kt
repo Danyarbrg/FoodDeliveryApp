@@ -1,24 +1,17 @@
-package com.example.foodapp
+package com.example.foodapp.network
 
+import com.example.foodapp.model.MealDetailResponse
+import com.example.foodapp.model.MealListResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-data class MealResponse(
-    val meals: List<Meal>?
-)
-
-data class Meal(
-    val idMeal: String,
-    val strMeal: String,
-    val strCategory: String?,
-    val strMealThumb: String,
-    val strInstructions: String
-)
-
 interface MealApi {
-    // Поиск по названию блюда
-    @GET("api/json/v1/1/search.php")
-    suspend fun searchMealsByName(
-        @Query("s") name: String
-    ): MealResponse
+
+    // Получить список блюд по категории
+    @GET("filter.php")
+    suspend fun getMealsByCategory(@Query("c") category: String): MealListResponse
+
+    // Получить подробности о блюде по ID
+    @GET("lookup.php")
+    suspend fun getMealDetail(@Query("i") id: String): MealDetailResponse
 }

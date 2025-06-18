@@ -9,6 +9,7 @@ import android.widget.ImageView
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
+import com.example.foodapp.network.MealApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -44,33 +45,48 @@ class FoodTypeActivity : AppCompatActivity() {
         // 4) Загружаем данные о блюде из TheMealDB
         lifecycleScope.launch {
             try {
-                val api = Retrofit.Builder()
-                    .baseUrl("https://www.themealdb.com/")
+                val retrofit = Retrofit.Builder()
+                    .baseUrl("https://www.themealdb.com/api/json/v1/1/")
                     .addConverterFactory(GsonConverterFactory.create())
                     .build()
-                    .create(MealApi::class.java)
 
-                val response = withContext(Dispatchers.IO) {
-                    api.searchMealsByName(foodType)
+                val api = retrofit.create(MealApi::class.java)
+
+                // 1. Получаем блюда по категории
+                val mealsResponse = withContext(Dispatchers.IO) {
+                    api.getMealsByCategory(foodType)
                 }
 
-                // берём первое блюдо из списка
-                val meal = response.meals?.firstOrNull()
-                meal?.let {
-                    // загрузка картинки через Glide (не забудь добавить зависимость!)
-                    Glide.with(this@FoodTypeActivity)
-                        .load(it.strMealThumb)
-                        .into(ivImage)
+                val firstMeal = mealsResponse.meals.firstOrNull()
+                if (firstMeal != null) {
+                    // 2. Получаем подробности блюда
+                    val mealDetail = withContext(Dispatchers.IO) {
+                        api.getMealDetail(firstMeal.idMeal)
+                    }.meals.firstOrNull()
 
-                    tvDescription.text = it.strInstructions
+                    // 3. Обновляем UI
+                    if (mealDetail != null) {
+                        Glide.with(this@FoodTypeActivity)
+                            .load(mealDetail.strMealThumb)
+                            .into(ivImage)
+
+                        tvDescription.text = mealDetail.strInstructions
+                        tvName.text = mealDetail.strMeal
+                    } else {
+                        tvDescription.text = "Описание блюда не найдено"
+                    }
+                } else {
+                    tvDescription.text = "Блюда по этой категории не найдены"
                 }
+
             } catch (e: Exception) {
-                tvDescription.text = "Не удалось загрузить данные"
+                tvDescription.text = "Ошибка загрузки: ${e.localizedMessage}"
             }
         }
     }
 
-    // Обработка клика по стрелке «назад»
+
+        // Обработка клика по стрелке «назад»
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
             finish()

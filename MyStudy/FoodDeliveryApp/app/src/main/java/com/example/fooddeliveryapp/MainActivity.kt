@@ -24,17 +24,17 @@ class MainActivity : AppCompatActivity() {
 
         btnFoodType1.setOnClickListener {
             val intent = Intent(this, FoodTypeActivity::class.java)
-            intent.putExtra("food_type", "Пицца")
+            intent.putExtra("food_type", "Seafood")
             startActivity(intent)
         }
         btnFoodType2.setOnClickListener {
             val intent = Intent(this, FoodTypeActivity::class.java)
-            intent.putExtra("food_type", "Суши")
+            intent.putExtra("food_type", "Beef")
             startActivity(intent)
         }
         btnFoodType3.setOnClickListener {
             val intent = Intent(this, FoodTypeActivity::class.java)
-            intent.putExtra("food_type", "Бургеры")
+            intent.putExtra("food_type", "Pasta")
             startActivity(intent)
         }
 
